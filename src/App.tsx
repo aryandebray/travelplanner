@@ -9,7 +9,7 @@ import ExpensesPage from './pages/ExpensesPage';
 import CalendarPage from './pages/CalendarPage';
 import RecommendationsPage from './pages/RecommendationsPage';
 import ChatPage from './pages/ChatPage';
-import { LogOut, Globe, Map, DollarSign, CalendarDays, Sparkles, MessageCircle, Home as HomeIcon, UserPlus, X, Copy, Check, Loader2, Send, Pencil } from 'lucide-react';
+import { LogOut, Globe, Map, DollarSign, CalendarDays, Sparkles, MessageCircle, Home as HomeIcon, UserPlus, X, Copy, Check, Loader2, Send, Pencil, User, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -42,7 +42,7 @@ const navItems = [
 
 function InviteModal({ tripId, onClose }: { tripId: string; onClose: () => void }) {
   const { user } = useAuth();
-  const { members, getMemberName, updateNickname } = useTripMembers();
+  const { members, getMemberName, updateNickname, addGuestMember, removeGuestMember } = useTripMembers();
   const [tab, setTab] = useState<'invite' | 'members'>('invite');
   const [inviteLink, setInviteLink] = useState('');
   const [linkCopied, setLinkCopied] = useState(false);
@@ -52,6 +52,10 @@ function InviteModal({ tripId, onClose }: { tripId: string; onClose: () => void 
   const [inviteSuccess, setInviteSuccess] = useState(false);
   const [editingNickname, setEditingNickname] = useState<string | null>(null);
   const [nicknameInput, setNicknameInput] = useState('');
+  const [guestNickname, setGuestNickname] = useState('');
+  const [addingGuest, setAddingGuest] = useState(false);
+  const [guestSuccess, setGuestSuccess] = useState(false);
+  const [removingGuest, setRemovingGuest] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.from('trips').select('invite_code').eq('id', tripId).single()
@@ -82,10 +86,7 @@ function InviteModal({ tripId, onClose }: { tripId: string; onClose: () => void 
     if (emails.length === 0) return;
     setInviting(true);
     try {
-      // Look up users by email and add them as trip members
       for (const email of emails) {
-        // Find user by email from auth.users via a lookup (requires service key or a helper function)
-        // For now, store the invite in a simple trip_invites table
         const { error } = await supabase.from('trip_invites').insert({
           trip_id: tripId,
           invited_email: email,
@@ -105,6 +106,32 @@ function InviteModal({ tripId, onClose }: { tripId: string; onClose: () => void 
     }
   };
 
+  const handleAddGuest = async () => {
+    if (!guestNickname.trim()) return;
+    setAddingGuest(true);
+    try {
+      await addGuestMember(guestNickname.trim());
+      setGuestNickname('');
+      setGuestSuccess(true);
+      setTimeout(() => setGuestSuccess(false), 3000);
+    } catch {
+      alert('Failed to add guest member');
+    } finally {
+      setAddingGuest(false);
+    }
+  };
+
+  const handleRemoveGuest = async (guestUserId: string) => {
+    setRemovingGuest(guestUserId);
+    try {
+      await removeGuestMember(guestUserId);
+    } catch {
+      alert('Failed to remove guest');
+    } finally {
+      setRemovingGuest(null);
+    }
+  };
+
   const handleNicknameSave = async (userId: string) => {
     try {
       await updateNickname(userId, nicknameInput);
@@ -120,6 +147,9 @@ function InviteModal({ tripId, onClose }: { tripId: string; onClose: () => void 
     setNicknameInput(member?.nickname || '');
     setEditingNickname(userId);
   };
+
+  const realMembers = members.filter(m => !m.is_guest);
+  const guestMembers = members.filter(m => m.is_guest);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -152,6 +182,67 @@ function InviteModal({ tripId, onClose }: { tripId: string; onClose: () => void 
         <div className="overflow-y-auto p-5 flex-1">
           {tab === 'invite' && (
             <div className="space-y-6">
+              {/* Add by Nickname (Guest) */}
+              <div>
+                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5" /> Add Guests
+                </h3>
+                <p className="text-xs text-slate-500 mb-3">Add someone who doesn't have an account. They'll appear as a guest member in the trip.</p>
+                <div className="flex gap-2 mb-3">
+                  <input
+                    type="text"
+                    value={guestNickname}
+                    onChange={e => setGuestNickname(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddGuest(); } }}
+                    placeholder="e.g. Jordan, Mom, Roommate..."
+                    className="glass-input text-sm flex-1"
+                    maxLength={50}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddGuest}
+                    disabled={!guestNickname.trim() || addingGuest}
+                    className="px-4 py-2 btn-gradient text-sm flex items-center gap-1.5 disabled:opacity-30"
+                  >
+                    {addingGuest ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><UserPlus className="w-3.5 h-3.5" /> Add</>}
+                  </button>
+                </div>
+                {guestSuccess && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-2 text-xs text-emerald-400 flex items-center gap-1.5"
+                  >
+                    <Check className="w-3.5 h-3.5" /> Guest member added successfully!
+                  </motion.div>
+                )}
+                {guestMembers.length > 0 && (
+                  <div className="mt-3 space-y-1.5">
+                    {guestMembers.map(g => (
+                      <div key={g.user_id} className="flex items-center justify-between bg-white/[0.03] border border-white/5 rounded-lg px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/20 flex items-center justify-center">
+                            <User className="w-3 h-3 text-amber-400" />
+                          </div>
+                          <span className="text-xs text-slate-300 font-medium">{g.nickname}</span>
+                          <span className="text-[9px] bg-amber-500/10 text-amber-400 border border-amber-500/15 px-1.5 py-0.5 rounded-full font-semibold uppercase tracking-wider">Guest</span>
+                        </div>
+                        <button
+                          onClick={() => handleRemoveGuest(g.user_id)}
+                          disabled={removingGuest === g.user_id}
+                          className="p-1 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                          title="Remove guest"
+                        >
+                          {removingGuest === g.user_id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="border-t border-white/5" />
+
               {/* Shareable Link */}
               <div>
                 <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Shareable Link</h3>
@@ -212,44 +303,110 @@ function InviteModal({ tripId, onClose }: { tripId: string; onClose: () => void 
 
           {tab === 'members' && (
             <div className="space-y-3">
-              <p className="text-xs text-slate-500 mb-4">Assign nicknames to trip members. These appear everywhere in this trip.</p>
-              {members.map(m => (
-                <div key={m.user_id} className="bg-white/5 border border-white/5 rounded-xl p-3 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent-cyan to-accent-violet flex items-center justify-center text-white text-xs font-bold shrink-0">
-                      {(m.nickname || getMemberName(m.user_id)).charAt(0).toUpperCase()}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      {editingNickname === m.user_id ? (
-                        <div className="flex gap-2">
-                          <input
-                            autoFocus
-                            type="text"
-                            value={nicknameInput}
-                            onChange={e => setNicknameInput(e.target.value)}
-                            onKeyDown={e => { if (e.key === 'Enter') handleNicknameSave(m.user_id); if (e.key === 'Escape') setEditingNickname(null); }}
-                            placeholder="Enter nickname"
-                            className="glass-input text-xs py-1.5 flex-1"
-                          />
-                          <button onClick={() => handleNicknameSave(m.user_id)} className="px-2 py-1 bg-accent-cyan/10 text-accent-cyan rounded-lg text-xs hover:bg-accent-cyan/20 transition-all">
-                            <Check className="w-3.5 h-3.5" />
-                          </button>
+              <p className="text-xs text-slate-500 mb-4">Manage trip members and assign nicknames. These appear everywhere in this trip.</p>
+
+              {/* Real Members */}
+              {realMembers.length > 0 && (
+                <>
+                  <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-[0.15em] mb-2">Members</div>
+                  {realMembers.map(m => (
+                    <div key={m.user_id} className="bg-white/5 border border-white/5 rounded-xl p-3 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent-cyan to-accent-violet flex items-center justify-center text-white text-xs font-bold shrink-0">
+                          {(m.nickname || getMemberName(m.user_id)).charAt(0).toUpperCase()}
                         </div>
-                      ) : (
-                        <>
-                          <div className="text-sm font-medium text-white truncate">{getMemberName(m.user_id)}</div>
-                          <div className="text-[10px] text-slate-500 capitalize">{m.role} {m.user_id === user?.id ? '(you)' : ''}</div>
-                        </>
+                        <div className="min-w-0 flex-1">
+                          {editingNickname === m.user_id ? (
+                            <div className="flex gap-2">
+                              <input
+                                autoFocus
+                                type="text"
+                                value={nicknameInput}
+                                onChange={e => setNicknameInput(e.target.value)}
+                                onKeyDown={e => { if (e.key === 'Enter') handleNicknameSave(m.user_id); if (e.key === 'Escape') setEditingNickname(null); }}
+                                placeholder="Enter nickname"
+                                className="glass-input text-xs py-1.5 flex-1"
+                              />
+                              <button onClick={() => handleNicknameSave(m.user_id)} className="px-2 py-1 bg-accent-cyan/10 text-accent-cyan rounded-lg text-xs hover:bg-accent-cyan/20 transition-all">
+                                <Check className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="text-sm font-medium text-white truncate">{getMemberName(m.user_id)}</div>
+                              <div className="text-[10px] text-slate-500 capitalize">{m.role} {m.user_id === user?.id ? '(you)' : ''}</div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      {editingNickname !== m.user_id && (
+                        <button onClick={() => startEditNickname(m.user_id)} className="p-1.5 text-slate-500 hover:text-accent-cyan hover:bg-accent-cyan/10 rounded-lg transition-all shrink-0" title="Edit nickname">
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
                       )}
                     </div>
+                  ))}
+                </>
+              )}
+
+              {/* Guest Members */}
+              {guestMembers.length > 0 && (
+                <>
+                  <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-[0.15em] mb-2 mt-5 flex items-center gap-1.5">
+                    <User className="w-3 h-3" /> Guests (No Account)
                   </div>
-                  {editingNickname !== m.user_id && (
-                    <button onClick={() => startEditNickname(m.user_id)} className="p-1.5 text-slate-500 hover:text-accent-cyan hover:bg-accent-cyan/10 rounded-lg transition-all shrink-0" title="Edit nickname">
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-              ))}
+                  {guestMembers.map(m => (
+                    <div key={m.user_id} className="bg-white/5 border border-amber-500/10 rounded-xl p-3 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/20 flex items-center justify-center text-amber-400 text-xs font-bold shrink-0">
+                          {(m.nickname || 'G').charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          {editingNickname === m.user_id ? (
+                            <div className="flex gap-2">
+                              <input
+                                autoFocus
+                                type="text"
+                                value={nicknameInput}
+                                onChange={e => setNicknameInput(e.target.value)}
+                                onKeyDown={e => { if (e.key === 'Enter') handleNicknameSave(m.user_id); if (e.key === 'Escape') setEditingNickname(null); }}
+                                placeholder="Enter nickname"
+                                className="glass-input text-xs py-1.5 flex-1"
+                              />
+                              <button onClick={() => handleNicknameSave(m.user_id)} className="px-2 py-1 bg-accent-cyan/10 text-accent-cyan rounded-lg text-xs hover:bg-accent-cyan/20 transition-all">
+                                <Check className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="text-sm font-medium text-white truncate flex items-center gap-2">
+                                {m.nickname || 'Guest'}
+                                <span className="text-[9px] bg-amber-500/10 text-amber-400 border border-amber-500/15 px-1.5 py-0.5 rounded-full font-semibold uppercase tracking-wider">Guest</span>
+                              </div>
+                              <div className="text-[10px] text-slate-500">Nickname only — no account</div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        {editingNickname !== m.user_id && (
+                          <button onClick={() => startEditNickname(m.user_id)} className="p-1.5 text-slate-500 hover:text-accent-cyan hover:bg-accent-cyan/10 rounded-lg transition-all" title="Edit nickname">
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleRemoveGuest(m.user_id)}
+                          disabled={removingGuest === m.user_id}
+                          className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                          title="Remove guest"
+                        >
+                          {removingGuest === m.user_id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           )}
         </div>

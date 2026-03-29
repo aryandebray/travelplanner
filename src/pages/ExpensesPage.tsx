@@ -13,15 +13,11 @@ type Expense = {
   title: string;
   amount: number;
   currency: string;
-  paid_by: string;
+  paid_by: string | null;
+  paid_by_guest_id: string | null;
   split_type: 'equal' | 'custom';
   category: string;
   created_at: string;
-};
-
-type Member = {
-  user_id: string;
-  role: string;
 };
 
 const CATEGORIES = ['food', 'transport', 'stay', 'activity', 'other'];
@@ -48,7 +44,6 @@ export default function ExpensesPage() {
   const { user } = useAuth();
   
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [expMembers, setExpMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -83,16 +78,9 @@ export default function ExpensesPage() {
   const fetchData = async () => {
     if (!tripId) return;
     try {
-      const [expRes, memRes] = await Promise.all([
-        supabase.from('expenses').select('*').eq('trip_id', tripId).order('created_at', { ascending: false }),
-        supabase.from('trip_members').select('user_id, role').eq('trip_id', tripId)
-      ]);
+      const expRes = await supabase.from('expenses').select('*').eq('trip_id', tripId).order('created_at', { ascending: false });
       if (expRes.data) setExpenses(expRes.data as Expense[]);
-      if (memRes.data) {
-        setExpMembers(memRes.data);
-        if (user && !paidBy) setPaidBy(user.id);
-        else if (memRes.data.length > 0 && !paidBy) setPaidBy(memRes.data[0].user_id);
-      }
+      if (user && !paidBy) setPaidBy(user.id);
     } catch (err) {
       console.error(err);
     } finally {
@@ -115,10 +103,14 @@ export default function ExpensesPage() {
     if (!tripId || !title || !amount) return;
     setAdding(true);
     try {
-      const { data, error } = await supabase.from('expenses').insert({
+      const isGuestPayer = paidBy.startsWith('guest:');
+      const insertData: any = {
         trip_id: tripId, title, amount: parseFloat(amount), currency,
-        paid_by: paidBy, split_type: splitType, category
-      }).select().single();
+        paid_by: isGuestPayer ? null : paidBy,
+        paid_by_guest_id: isGuestPayer ? paidBy.replace('guest:', '') : null,
+        split_type: splitType, category
+      };
+      const { data, error } = await supabase.from('expenses').insert(insertData).select().single();
       if (error) throw error;
       setExpenses([data as Expense, ...expenses]);
       setIsModalOpen(false);
@@ -133,20 +125,38 @@ export default function ExpensesPage() {
     }
   };
 
-  const { getMemberName } = useTripMembers();
+  const { members, getMemberName } = useTripMembers();
   const convertToUSD = (amount: number, curr: string) => curr === 'USD' ? amount : amount / (rates[curr] || 1);
   const displayInUSD = (amount: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 
+  // Helper to get effective payer ID (resolves guest expenses)
+  const getPayerId = (exp: Expense): string => {
+    if (exp.paid_by_guest_id) return `guest:${exp.paid_by_guest_id}`;
+    return exp.paid_by || '';
+  };
+
+  // Use all members (real + guests) from context for expenses
+  const allMembers = members;
+
+  // Set default paidBy once members load
+  useEffect(() => {
+    if (allMembers.length > 0 && !paidBy) {
+      if (user) setPaidBy(user.id);
+      else setPaidBy(allMembers[0].user_id);
+    }
+  }, [allMembers, user]);
+
   // Balances
   const balances: Record<string, { paid: number; owes: number; net: number }> = {};
-  expMembers.forEach(m => { balances[m.user_id] = { paid: 0, owes: 0, net: 0 }; });
+  allMembers.forEach(m => { balances[m.user_id] = { paid: 0, owes: 0, net: 0 }; });
   expenses.forEach(exp => {
     const usdAmount = convertToUSD(exp.amount, exp.currency);
-    if (balances[exp.paid_by]) balances[exp.paid_by].paid += usdAmount;
-    const splitAmount = usdAmount / expMembers.length;
-    expMembers.forEach(m => { balances[m.user_id].owes += splitAmount; });
+    const payerId = getPayerId(exp);
+    if (balances[payerId]) balances[payerId].paid += usdAmount;
+    const splitAmount = usdAmount / allMembers.length;
+    allMembers.forEach(m => { balances[m.user_id].owes += splitAmount; });
   });
-  expMembers.forEach(m => { balances[m.user_id].net = balances[m.user_id].paid - balances[m.user_id].owes; });
+  allMembers.forEach(m => { balances[m.user_id].net = balances[m.user_id].paid - balances[m.user_id].owes; });
 
   // Pie chart data (by category)
   const pieData = CATEGORIES.map(cat => {
@@ -155,7 +165,7 @@ export default function ExpensesPage() {
   }).filter(d => d.value > 0);
 
   // Per-person spending data
-  const perPersonData = expMembers.map((m: Member, i: number) => ({
+  const perPersonData = allMembers.map((m, i: number) => ({
     name: getMemberName(m.user_id),
     value: balances[m.user_id]?.paid || 0,
     color: MEMBER_COLORS[i % MEMBER_COLORS.length]
@@ -165,10 +175,10 @@ export default function ExpensesPage() {
 
   // Scout data context
   const scoutPageData = {
-    expenses: expenses.map(e => ({ title: e.title, amount: e.amount, currency: e.currency, category: e.category, paid_by: getMemberName(e.paid_by) })),
+    expenses: expenses.map(e => ({ title: e.title, amount: e.amount, currency: e.currency, category: e.category, paid_by: getMemberName(getPayerId(e)) })),
     totalCostUSD: totalTripCostUSD,
-    members: expMembers.map((m: Member) => getMemberName(m.user_id)),
-    balances: expMembers.map((m: Member) => ({ name: getMemberName(m.user_id), net: balances[m.user_id]?.net || 0 })),
+    members: allMembers.map(m => getMemberName(m.user_id)),
+    balances: allMembers.map(m => ({ name: getMemberName(m.user_id), net: balances[m.user_id]?.net || 0 })),
   };
 
   const handleScoutChart = (data: any) => {
@@ -327,7 +337,7 @@ export default function ExpensesPage() {
                     <div>
                       <h4 className="font-bold text-white text-sm">{exp.title}</h4>
                       <p className="text-xs text-slate-400">
-                        Paid by <span className="font-medium text-slate-300">{getMemberName(exp.paid_by)}</span> • {new Date(exp.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        Paid by <span className="font-medium text-slate-300">{getMemberName(getPayerId(exp))}</span> â€¢ {new Date(exp.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </p>
                     </div>
                   </div>
@@ -383,11 +393,14 @@ export default function ExpensesPage() {
           <div className="glass-card p-5">
             <h3 className="text-sm font-bold text-white mb-4">Running Balances</h3>
             <div className="space-y-2">
-              {expMembers.map((m: Member) => {
+              {allMembers.map((m) => {
                 const net = balances[m.user_id]?.net || 0;
                 return (
                   <div key={m.user_id} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
-                    <span className="font-medium text-slate-300 text-sm">{getMemberName(m.user_id)}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-medium text-slate-300 text-sm">{getMemberName(m.user_id)}</span>
+                      {m.is_guest && <span className="text-[8px] bg-amber-500/10 text-amber-400 border border-amber-500/15 px-1 py-0.5 rounded-full font-semibold uppercase">Guest</span>}
+                    </div>
                     <span className={`font-bold text-sm ${net > 0 ? 'text-emerald-400' : net < 0 ? 'text-red-400' : 'text-slate-500'}`}>
                       {net > 0 ? '+' : ''}{displayInUSD(net)}
                     </span>
@@ -439,9 +452,9 @@ export default function ExpensesPage() {
                      <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Currency</label>
                      <select value={currency} onChange={e => setCurrency(e.target.value)} className="glass-input text-sm appearance-none cursor-pointer">
                        <option value="USD">USD ($)</option>
-                       <option value="EUR">EUR (€)</option>
-                       <option value="GBP">GBP (£)</option>
-                       <option value="JPY">JPY (¥)</option>
+                       <option value="EUR">EUR (â‚¬)</option>
+                       <option value="GBP">GBP (Â£)</option>
+                       <option value="JPY">JPY (Â¥)</option>
                      </select>
                    </div>
                  </div>
@@ -449,8 +462,8 @@ export default function ExpensesPage() {
                  <div>
                    <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Paid By</label>
                    <select value={paidBy} onChange={e => setPaidBy(e.target.value)} className="glass-input text-sm appearance-none cursor-pointer">
-                     {expMembers.map((m: Member) => (
-                       <option key={m.user_id} value={m.user_id}>{getMemberName(m.user_id)}</option>
+                     {allMembers.map((m) => (
+                       <option key={m.user_id} value={m.user_id}>{getMemberName(m.user_id)}{m.is_guest ? ' (Guest)' : ''}</option>
                      ))}
                    </select>
                  </div>
