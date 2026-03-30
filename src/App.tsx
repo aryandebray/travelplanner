@@ -415,23 +415,82 @@ function InviteModal({ tripId, onClose }: { tripId: string; onClose: () => void 
   );
 }
 
+function MobileMenu({ isOpen, onClose, tripId, navItems }: { isOpen: boolean; onClose: () => void; tripId: string; navItems: any[] }) {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/60 backdrop-blur-md z-[60] md:hidden"
+          />
+          <motion.div
+            initial={{ x: '-100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '-100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed inset-y-0 left-0 w-[280px] glass-sidebar z-[70] p-6 md:hidden flex flex-col"
+          >
+            <div className="flex justify-between items-center mb-8">
+              <Link to="/" onClick={onClose} className="flex items-center gap-3 group">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-cyan to-accent-violet flex items-center justify-center">
+                  <Globe className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-xl font-bold gradient-text">Atlas</span>
+              </Link>
+              <button onClick={onClose} className="p-2 text-slate-400 hover:text-white rounded-full">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <nav className="flex-1 space-y-2">
+              <Link to="/" onClick={onClose} className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-white/5 font-medium transition-all">
+                <HomeIcon className="w-5 h-5 text-accent-cyan" /> Dashboard
+              </Link>
+              
+              <div className="pt-6 pb-2 px-4 text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em]">
+                Trip Menu
+              </div>
+              
+              {navItems.map((item) => (
+                <Link 
+                  key={item.path} 
+                  to={`/trip/${tripId}/${item.path}`}
+                  onClick={onClose}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-white/5 font-medium transition-all"
+                >
+                  <item.icon className="w-5 h-5 text-accent-violet" /> {item.label}
+                </Link>
+              ))}
+            </nav>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
 function TripLayout() {
   const { signOut, user } = useAuth();
   const { tripId } = useParams();
   const location = useLocation();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname.includes(path);
   
   return (
     <TripMembersProvider tripId={tripId || ''}>
-      <div className="min-h-screen flex relative">
+      <div className="min-h-screen flex flex-col md:flex-row relative">
         {/* Aurora background */}
         <div className="aurora-bg" />
         <div className="aurora-blob-3" />
 
-        {/* Sidebar */}
-        <aside className="w-64 glass-sidebar hidden md:flex flex-col p-5 z-20 sticky top-0 h-screen">
+        {/* Desktop Sidebar */}
+        <aside className="w-64 glass-sidebar hidden md:flex flex-col p-5 z-20 sticky top-0 h-screen shrink-0">
           <Link to="/" className="flex items-center gap-3 mb-10 px-2 group">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-cyan to-accent-violet flex items-center justify-center shadow-lg shadow-accent-cyan/20 group-hover:shadow-accent-cyan/40 transition-shadow">
               <Globe className="w-5 h-5 text-white" />
@@ -484,9 +543,41 @@ function TripLayout() {
             </button>
           </div>
         </aside>
+
+        {/* Mobile Header */}
+        <header className="md:hidden sticky top-0 z-40 mobile-header px-4 py-3 flex items-center justify-between">
+          <button 
+            onClick={() => setMobileMenuOpen(true)}
+            className="p-2 -ml-2 text-slate-300 hover:text-white transition-colors"
+          >
+            <div className="w-6 h-5 flex flex-col justify-between">
+              <span className="w-full h-0.5 bg-current rounded-full" />
+              <span className="w-2/3 h-0.5 bg-current rounded-full" />
+              <span className="w-full h-0.5 bg-current rounded-full" />
+            </div>
+          </button>
+          
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-cyan to-accent-violet flex items-center justify-center shadow-lg shadow-accent-cyan/20">
+              <Globe className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-lg font-bold gradient-text">Atlas</span>
+          </Link>
+
+          <button onClick={() => setInviteModalOpen(true)} className="p-2 -mr-2 text-accent-cyan hover:bg-accent-cyan/10 rounded-full transition-all">
+            <UserPlus className="w-5 h-5" />
+          </button>
+        </header>
+
+        <MobileMenu 
+          isOpen={mobileMenuOpen} 
+          onClose={() => setMobileMenuOpen(false)} 
+          tripId={tripId || ''} 
+          navItems={navItems} 
+        />
         
         {/* Main Content */}
-        <main className="flex-1 overflow-x-hidden relative z-10">
+        <main className="flex-1 overflow-x-hidden relative z-10 flex flex-col min-h-[calc(100vh-60px)] md:min-h-screen">
           <PageWrapper />
         </main>
 

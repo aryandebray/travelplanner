@@ -313,13 +313,15 @@ export default function ItineraryPage() {
     setExportOpen(false);
   };
 
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
   if (loading) {
     return <div className="p-8 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-accent-cyan" /></div>;
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-[1400px] mx-auto">
-      <div className="flex justify-between items-end mb-8">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1400px] mx-auto pb-24 sm:pb-8">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-white mb-1">Itinerary</h1>
           {trip && (
@@ -364,14 +366,15 @@ export default function ItineraryPage() {
       </div>
 
       {(!hasExisting && itinerary.length === 0) || generating ? (
+        // ... (Generating state stays largely same)
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="glass-card p-8 max-w-2xl mx-auto"
+          className="glass-card p-6 sm:p-8 max-w-2xl mx-auto"
         >
           <div className="text-center mb-8 relative">
-            <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br from-accent-cyan/20 to-accent-violet/20 flex items-center justify-center mx-auto mb-4 transition-all duration-500 ${generating ? 'animate-glow-pulse scale-110' : ''}`}>
-              <Sparkles className={`w-10 h-10 text-accent-cyan ${generating ? 'animate-spin' : ''}`} style={{ animationDuration: generating ? '3s' : '' }} />
+            <div className={`w-16 sm:w-20 h-16 sm:h-20 rounded-2xl bg-gradient-to-br from-accent-cyan/20 to-accent-violet/20 flex items-center justify-center mx-auto mb-4 transition-all duration-500 ${generating ? 'animate-glow-pulse scale-110' : ''}`}>
+              <Sparkles className={`w-8 sm:w-10 h-8 sm:h-10 text-accent-cyan ${generating ? 'animate-spin' : ''}`} style={{ animationDuration: generating ? '3s' : '' }} />
             </div>
             {generating && (
               <motion.div 
@@ -381,8 +384,8 @@ export default function ItineraryPage() {
                 className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-gradient-to-tr from-accent-cyan/30 to-accent-violet/30 rounded-full blur-3xl z-0"
               />
             )}
-            <h2 className="text-2xl font-bold text-white relative z-10">Generate AI Itinerary</h2>
-            <p className="text-slate-400 mt-2 text-sm relative z-10">Let Scout build the perfect schedule for {trip?.name}.</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-white relative z-10">Generate AI Itinerary</h2>
+            <p className="text-slate-400 mt-2 text-xs sm:text-sm relative z-10">Let Scout build the perfect schedule for {trip?.name}.</p>
           </div>
 
           <form onSubmit={handleGenerate} className="space-y-6">
@@ -446,13 +449,13 @@ export default function ItineraryPage() {
           </form>
         </motion.div>
       ) : (
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div className="relative">
           {/* Itinerary Cards */}
-          <motion.div className="space-y-10 flex-1 min-w-0">
+          <motion.div className="space-y-10 w-full">
             {itinerary.map((day, dayIndex) => (
               <motion.div key={day.day_number} className="relative">
-                <div className="sticky top-0 z-20 py-3 mb-3 bg-atlas-bg/80 backdrop-blur-lg print:bg-transparent">
-                  <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                <div className="sticky top-[60px] md:top-0 z-20 py-3 mb-3 bg-atlas-bg/80 backdrop-blur-lg print:bg-transparent">
+                  <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-3">
                     <span className="px-3 py-1 rounded-full text-sm font-semibold bg-gradient-to-r from-accent-cyan/20 to-accent-violet/20 text-accent-cyan border border-accent-cyan/20">
                       Day {day.day_number}
                     </span>
@@ -460,7 +463,7 @@ export default function ItineraryPage() {
                 </div>
                 
                 <div 
-                  className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 min-h-[100px] p-3 -mx-3 rounded-xl transition-colors duration-200"
+                  className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 min-h-[100px] sm:p-3 sm:-mx-3 rounded-xl transition-colors duration-200"
                   onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('bg-white/5'); }}
                   onDragLeave={(e) => e.currentTarget.classList.remove('bg-white/5')}
                   onDrop={(e) => handleDrop(e, dayIndex)}
@@ -477,7 +480,7 @@ export default function ItineraryPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ type: "spring", stiffness: 300, damping: 24, delay: i * 0.05 }}
                         whileHover={{ scale: 1.02, y: -2 }}
-                        className="glass-card glow-border p-5 relative overflow-hidden group h-full"
+                        className="glass-card glow-border p-4 sm:p-5 relative overflow-hidden group h-full"
                       >
                         <div className="relative z-10">
                           {editingActivity?.dayIndex === dayIndex && editingActivity?.actIndex === i && editForm ? (
@@ -504,7 +507,7 @@ export default function ItineraryPage() {
                                   <div className="flex items-center gap-1.5 text-sm flex-1">
                                     <Clock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                                     <input type="text" value={editForm.estimated_duration} onChange={(e) => setEditForm({...editForm, estimated_duration: e.target.value})}
-                                      className="glass-input py-1 text-sm" placeholder="Duration" />
+                                      className="glass-input py-1 text-sm transition-all" placeholder="Duration" />
                                   </div>
                                   <div className="flex items-center gap-1.5 text-sm flex-1">
                                     <DollarSign className="w-3 h-3 text-emerald-400 shrink-0" />
@@ -520,7 +523,7 @@ export default function ItineraryPage() {
                                 <span className="inline-block px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/20">
                                   {act.time_block}
                                 </span>
-                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="flex gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                                   <button onClick={(e) => { e.stopPropagation(); handleEditClick(dayIndex, i, act); }} className="text-slate-500 hover:text-accent-cyan p-1 rounded hover:bg-white/5" title="Edit">
                                     <Edit2 className="w-3.5 h-3.5" />
                                   </button>
@@ -530,7 +533,7 @@ export default function ItineraryPage() {
                                 </div>
                               </div>
                               <h3 className="text-base font-bold text-white mb-1.5 leading-tight">{act.activity_name}</h3>
-                              <p className="text-slate-400 text-xs mb-4 line-clamp-2 group-hover:line-clamp-none transition-all leading-relaxed">{act.description}</p>
+                              <p className="text-slate-400 text-xs mb-4 line-clamp-2 md:group-hover:line-clamp-none transition-all leading-relaxed">{act.description}</p>
                               <div className="space-y-1.5 pt-3 border-t border-white/5">
                                 <div className="flex items-center gap-2 text-xs text-slate-400">
                                   <MapPin className="w-3.5 h-3.5 text-accent-cyan shrink-0" />
@@ -563,64 +566,106 @@ export default function ItineraryPage() {
             ))}
           </motion.div>
 
-          {/* Scout Chat Panel */}
-          <div className="w-full lg:w-[340px] shrink-0 print:hidden">
-            <div className="sticky top-6 glass-card overflow-hidden flex flex-col h-[580px]">
-              <div className="bg-gradient-to-r from-accent-cyan/20 to-accent-violet/20 p-4 flex items-center gap-2.5 border-b border-white/5">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-cyan to-accent-violet flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-white text-sm">Scout</h3>
-                  <p className="text-[10px] text-slate-400">AI Co-pilot</p>
-                </div>
-              </div>
-              
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {chatMessages.map((msg, i) => (
-                  <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed ${
-                      msg.role === 'user' 
-                        ? 'bg-gradient-to-r from-accent-cyan to-accent-violet text-white rounded-br-sm' 
-                        : 'bg-white/5 border border-white/5 text-slate-300 rounded-bl-sm'
-                    }`}>
-                      {msg.content}
-                    </div>
-                  </div>
-                ))}
-                {chatLoading && (
-                  <div className="flex justify-start">
-                    <div className="bg-white/5 border border-white/5 p-3 rounded-2xl rounded-bl-sm">
-                      <div className="flex gap-1">
-                        <div className="w-1.5 h-1.5 bg-accent-cyan rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
-                        <div className="w-1.5 h-1.5 bg-accent-cyan rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
-                        <div className="w-1.5 h-1.5 bg-accent-cyan rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
+          {/* Scout FAB & Overlay */}
+          <div className="fixed bottom-0 right-0 p-6 z-[100] print:hidden">
+            <AnimatePresence>
+              {isChatOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9, y: 20, transformOrigin: 'bottom right' }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                  className="chat-overlay glass-card overflow-hidden flex flex-col mb-4 rounded-2xl border border-white/10"
+                >
+                  <div className="bg-gradient-to-r from-accent-cyan/20 to-accent-violet/20 p-4 flex items-center justify-between border-b border-white/5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-cyan to-accent-violet flex items-center justify-center shadow-lg shadow-accent-cyan/20">
+                        <Bot className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-white text-sm">Scout</h3>
+                        <p className="text-[10px] text-slate-400">AI Co-pilot</p>
                       </div>
                     </div>
+                    <button 
+                      onClick={() => setIsChatOpen(false)}
+                      className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-all"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
-                )}
-                <div ref={chatEndRef} />
-              </div>
-              
-              <div className="p-3 border-t border-white/5">
-                <form onSubmit={handleChatSubmit} className="flex gap-2">
-                  <input
-                    type="text"
-                    value={chatInput}
-                    onChange={e => setChatInput(e.target.value)}
-                    placeholder="Ask Scout to change things..."
-                    className="glass-input py-2 text-xs flex-1"
-                    disabled={chatLoading}
-                  />
-                  <button 
-                    type="submit"
-                    disabled={chatLoading || !chatInput.trim()}
-                    className="btn-gradient p-2 rounded-lg disabled:opacity-30"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                  </button>
-                </form>
-              </div>
+                  
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                    {chatMessages.map((msg, i) => (
+                      <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed ${
+                          msg.role === 'user' 
+                            ? 'bg-gradient-to-r from-accent-cyan to-accent-violet text-white rounded-br-sm shadow-md' 
+                            : 'bg-white/5 border border-white/5 text-slate-300 rounded-bl-sm'
+                        }`}>
+                          {msg.content}
+                        </div>
+                      </div>
+                    ))}
+                    {chatLoading && (
+                      <div className="flex justify-start">
+                        <div className="bg-white/5 border border-white/5 p-3 rounded-2xl rounded-bl-sm">
+                          <div className="flex gap-1">
+                            <div className="w-1.5 h-1.5 bg-accent-cyan rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
+                            <div className="w-1.5 h-1.5 bg-accent-cyan rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
+                            <div className="w-1.5 h-1.5 bg-accent-cyan rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <div ref={chatEndRef} />
+                  </div>
+                  
+                  <div className="p-4 border-t border-white/5 bg-white/[0.02]">
+                    <form onSubmit={handleChatSubmit} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={chatInput}
+                        onChange={e => setChatInput(e.target.value)}
+                        placeholder="Ask Scout to change things..."
+                        className="glass-input py-2.5 text-xs flex-1"
+                        disabled={chatLoading}
+                      />
+                      <button 
+                        type="submit"
+                        disabled={chatLoading || !chatInput.trim()}
+                        className="btn-gradient p-2.5 rounded-xl disabled:opacity-30 shadow-lg shadow-accent-cyan/10"
+                      >
+                        <Send className="w-4 h-4" />
+                      </button>
+                    </form>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="flex justify-end">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsChatOpen(!isChatOpen)}
+                className={`scout-fab w-14 h-14 rounded-2xl flex items-center justify-center relative group overflow-hidden ${isChatOpen ? 'bg-slate-800 border border-white/10' : 'btn-gradient'}`}
+              >
+                <AnimatePresence mode="wait">
+                  {isChatOpen ? (
+                    <motion.div key="close" initial={{ opacity: 0, rotate: -90 }} animate={{ opacity: 1, rotate: 0 }} exit={{ opacity: 0, rotate: 90 }}>
+                      <X className="w-6 h-6 text-white" />
+                    </motion.div>
+                  ) : (
+                    <motion.div key="open" initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }} className="relative">
+                      <Bot className="w-7 h-7 text-white" />
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full animate-pulse" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                
+                {/* Visual flare */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              </motion.button>
             </div>
           </div>
         </div>
