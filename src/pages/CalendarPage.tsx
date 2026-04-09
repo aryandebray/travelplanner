@@ -194,7 +194,7 @@ export default function CalendarPage() {
   };
 
   return (
-    <div className="h-full flex flex-col p-6 overflow-y-auto no-scrollbar pb-24">
+    <div className="h-full flex flex-col p-4 md:p-6 overflow-y-auto no-scrollbar pb-24">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
@@ -234,7 +234,7 @@ export default function CalendarPage() {
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ background: 'rgba(16,19,27,0.8)', backdropFilter: 'blur(8px)' }}>
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-              className="boarding-pass w-full max-w-2xl shadow-2xl flex flex-col"
+              className="boarding-pass w-full max-w-2xl max-h-[85vh] shadow-2xl flex flex-col"
             >
                <div className="flex justify-between items-center p-6 border-b border-atlas-border">
                  <h2 className="text-xl font-bold text-white uppercase tracking-tighter">Ingest_Reservation</h2>
@@ -262,7 +262,7 @@ export default function CalendarPage() {
                   </div>
 
                   <form id="booking-form" onSubmit={handleAddBooking} className="space-y-6">
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                        <div>
                          <label className="dot-matrix block mb-2">TYPE</label>
                          <select value={bType} onChange={e => setBType(e.target.value)} className="input-retro w-full uppercase">
@@ -278,7 +278,7 @@ export default function CalendarPage() {
                        </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                        <div>
                          <label className="dot-matrix block mb-2">START_VECTOR</label>
                          <input type="datetime-local" value={bStart} onChange={e => setBStart(e.target.value)} className="input-retro w-full" />
@@ -289,7 +289,7 @@ export default function CalendarPage() {
                        </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                        <div>
                          <label className="dot-matrix block mb-2">CONFIRMATION_KEY</label>
                          <input type="text" value={bConf} onChange={e => setBConf(e.target.value)} placeholder="XYZ_777" className="input-retro w-full font-mono uppercase" />

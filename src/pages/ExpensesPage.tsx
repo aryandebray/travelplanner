@@ -109,7 +109,7 @@ export default function ExpensesPage() {
   if (loading) return <div className="p-8 flex justify-center h-full items-center"><Loader2 className="w-8 h-8 animate-spin text-atlas-amber" /></div>;
 
   return (
-    <div className="h-full flex flex-col p-6 overflow-y-auto no-scrollbar pb-24">
+    <div className="h-full flex flex-col p-4 md:p-6 overflow-y-auto no-scrollbar pb-24">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
@@ -220,7 +220,7 @@ export default function ExpensesPage() {
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ background: 'rgba(16,19,27,0.8)', backdropFilter: 'blur(8px)' }}>
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-              className="boarding-pass w-full max-w-md shadow-2xl"
+              className="boarding-pass w-full max-w-md shadow-2xl max-h-[85vh] flex flex-col"
             >
                <div className="flex justify-between items-center p-6 border-b border-atlas-border">
                  <h2 className="text-xl font-bold text-white uppercase tracking-tighter">Log_Transaction</h2>
@@ -229,13 +229,13 @@ export default function ExpensesPage() {
                  </button>
                </div>
                
-               <form onSubmit={handleAddExpense} className="p-6 space-y-6">
+               <form onSubmit={handleAddExpense} className="p-6 space-y-6 overflow-y-auto no-scrollbar">
                  <div>
                    <label className="dot-matrix block mb-2">IDENTIFIER</label>
                    <input required type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="PROJECT_UBER" className="input-retro w-full uppercase" />
                  </div>
                  
-                 <div className="grid grid-cols-2 gap-6">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="dot-matrix block mb-2">AMOUNT</label>
                       <input required type="number" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} className="input-retro w-full" />
@@ -250,7 +250,7 @@ export default function ExpensesPage() {
                     </div>
                  </div>
 
-                 <div className="grid grid-cols-2 gap-6">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="dot-matrix block mb-2">SOURCE_PAYER</label>
                       <select value={paidBy} onChange={e => setPaidBy(e.target.value)} className="input-retro w-full uppercase">

@@ -95,7 +95,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="h-full flex flex-col p-8 overflow-y-auto no-scrollbar">
+    <div className="h-full flex flex-col p-4 md:p-8 overflow-y-auto no-scrollbar">
       {/* ── Hero Section ── */}
       <div className="relative w-full h-[380px] mb-12 boarding-pass flex items-center justify-center overflow-hidden" style={{ background: 'var(--bg2)' }}>
         <div className="absolute inset-0 z-0 opacity-15">

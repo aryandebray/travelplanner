@@ -1,13 +1,15 @@
 import { memo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Compass, Calendar as CalendarIcon, DollarSign, Map, MessageSquare, Settings, LogOut } from 'lucide-react';
+import { Compass, Calendar as CalendarIcon, DollarSign, Map, MessageSquare, Settings, LogOut, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface SidebarProps {
   tripId?: string;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-function Sidebar({ tripId }: SidebarProps) {
+function Sidebar({ tripId, isOpen, onClose }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -25,7 +27,23 @@ function Sidebar({ tripId }: SidebarProps) {
   ];
 
   return (
-    <aside className="sidebar-fixed">
+    <>
+      {/* Mobile Backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+          onClick={onClose}
+        />
+      )}
+      
+      <aside className={`sidebar-fixed fixed inset-y-0 left-0 transform transition-transform duration-300 ease-in-out md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:relative`}>
+        {/* Close Button Mobile */}
+        <button 
+          onClick={onClose}
+          className="md:hidden absolute top-4 right-4 text-atlas-muted hover:text-white"
+        >
+          <X className="w-5 h-5" />
+        </button>
       {/* Logo */}
       <div className="p-6 pb-2 flex items-center gap-3">
         <img src="/atlas-logo.png" alt="Atlas" className="w-9 h-9 rounded-lg object-cover" />
@@ -53,6 +71,7 @@ function Sidebar({ tripId }: SidebarProps) {
                   ? 'bg-atlas-amber/10 text-atlas-amber2'
                   : 'text-atlas-muted hover:text-atlas-text hover:bg-white/[0.03]'
               }`}
+              onClick={() => { if(window.innerWidth < 768) onClose(); }}
             >
               <item.icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-atlas-amber' : ''}`} strokeWidth={1.5} />
               <span className="text-[10px] font-semibold uppercase tracking-[0.12em]"
@@ -94,6 +113,7 @@ function Sidebar({ tripId }: SidebarProps) {
         </div>
       </div>
     </aside>
+    </>
   );
 }
 

@@ -8,7 +8,7 @@ import ItineraryPage from './pages/ItineraryPage';
 import ExpensesPage from './pages/ExpensesPage';
 import CalendarPage from './pages/CalendarPage';
 import RecommendationsPage from './pages/RecommendationsPage';
-import { Map, DollarSign, CalendarDays, Sparkles, X, UserPlus } from 'lucide-react';
+import { Map, DollarSign, CalendarDays, Sparkles, X, UserPlus, Menu } from 'lucide-react';
 import { useState, useEffect, memo } from 'react';
 import { supabase } from './lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -157,16 +157,24 @@ const TripLayout = memo(() => {
   const { tripId } = useParams();
   const location = useLocation();
   const [showInvite, setShowInvite] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
     <TripMembersProvider tripId={tripId!}>
       <div className="layout-shell flex h-screen overflow-hidden relative" style={{ background: 'var(--bg)' }}>
-        <Sidebar tripId={tripId} />
+        <Sidebar tripId={tripId} isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-        <div className="h-full flex flex-col flex-1 relative z-10">
+        <div className="h-full flex flex-col flex-1 relative z-10 w-full overflow-hidden">
           {/* Top Tab Bar — Frosted Terminal */}
-          <header className="tab-bar h-16 flex items-center justify-between px-8 shrink-0">
-            <div className="flex items-center gap-1 h-full">
+          <header className="tab-bar h-16 flex items-center justify-between px-4 md:px-8 shrink-0 overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-1 h-full shrink-0">
+              <button 
+                onClick={() => setIsSidebarOpen(true)}
+                className="md:hidden mr-4 text-atlas-muted hover:text-white transition-colors"
+                aria-label="Open Sidebar"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
               {navItems.map((item) => {
                 const path = `/trip/${tripId}/${item.path}`;
                 const isActive = location.pathname === path;

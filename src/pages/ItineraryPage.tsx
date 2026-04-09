@@ -318,7 +318,7 @@ export default function ItineraryPage() {
   }
 
   return (
-    <div className="h-full flex flex-col p-6 overflow-y-auto no-scrollbar pb-24">
+    <div className="h-full flex flex-col p-4 md:p-6 overflow-y-auto no-scrollbar pb-24">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
@@ -406,7 +406,7 @@ export default function ItineraryPage() {
              </p>
 
              <form onSubmit={handleGenerate} className="space-y-6 text-left">
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <div>
                      <label className="dot-matrix block mb-2 opacity-50"> TRAVELER_COUNT </label>
                      <input type="number" min="1" value={travelers} onChange={e => setTravelers(e.target.value === '' ? '' : parseInt(e.target.value))} className="input-retro w-full" />
@@ -544,7 +544,7 @@ export default function ItineraryPage() {
                    <textarea value={addModalOpen ? newActivity.description : editForm?.description} onChange={e => addModalOpen ? setNewActivity({...newActivity, description: e.target.value}) : setEditForm({...editForm!, description: e.target.value})} className="input-retro w-full h-20 resize-none uppercase" />
                  </div>
 
-                 <div className="grid grid-cols-2 gap-6">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="dot-matrix block mb-2">LOCATION</label>
                       <input type="text" value={addModalOpen ? newActivity.location : editForm?.location} onChange={e => addModalOpen ? setNewActivity({...newActivity, location: e.target.value}) : setEditForm({...editForm!, location: e.target.value})} className="input-retro w-full uppercase" />
@@ -555,7 +555,7 @@ export default function ItineraryPage() {
                     </div>
                  </div>
 
-                 <div className="grid grid-cols-2 gap-6">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="dot-matrix block mb-2">TEMPORAL_LENGTH</label>
                       <input type="text" value={addModalOpen ? newActivity.estimated_duration : editForm?.estimated_duration} onChange={e => addModalOpen ? setNewActivity({...newActivity, estimated_duration: e.target.value}) : setEditForm({...editForm!, estimated_duration: e.target.value})} className="input-retro w-full uppercase" />
