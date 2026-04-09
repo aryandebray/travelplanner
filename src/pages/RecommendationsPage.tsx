@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, MapPin, Search, Star, ExternalLink, Plus, Check, Compass } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Loader2, MapPin, Search, Star, Compass } from 'lucide-react';
 
 type Recommendation = {
   name: string;

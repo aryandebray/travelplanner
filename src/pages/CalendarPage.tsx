@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Plus, Calendar as CalendarIcon, Clock, AlertTriangle, Download, X, Type, Plane, Bed, Utensils, Compass } from 'lucide-react';
+import { Loader2, Plus, Calendar as CalendarIcon, Clock, X, Type, Plane, Bed, Utensils, Compass } from 'lucide-react';
 import { format, parseISO, isSameDay, differenceInDays, addDays, isWithinInterval, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 
 type Booking = {
@@ -47,7 +47,7 @@ export default function CalendarPage() {
   const [bStart, setBStart] = useState('');
   const [bEnd, setBEnd] = useState('');
   const [bConf, setBConf] = useState('');
-  const [bNotes, setBNotes] = useState('');
+  const [bNotes] = useState('');
   const [bCost, setBCost] = useState('');
 
   useEffect(() => { fetchData(); }, [tripId]);

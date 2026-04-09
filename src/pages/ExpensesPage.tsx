@@ -1,10 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../contexts/AuthContext';
 import { useTripMembers } from '../contexts/TripMembersContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Plus, DollarSign, X, TrendingUp, CreditCard } from 'lucide-react';
+import { Loader2, Plus, X, TrendingUp, CreditCard } from 'lucide-react';
 // import ExpenseChart3D from '../components/3d/ExpenseChart3D';
 import ExpenseChart2D from '../components/ExpenseChart2D';
 
@@ -24,7 +23,6 @@ const CATEGORIES = ['food', 'transport', 'stay', 'activity', 'other'];
 
 export default function ExpensesPage() {
   const { tripId } = useParams();
-  const { user } = useAuth();
   const { members, getMemberName } = useTripMembers();
   
   const [expenses, setExpenses] = useState<Expense[]>([]);

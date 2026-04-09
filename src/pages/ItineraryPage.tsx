@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Check, Download, Plane, Edit2, Trash2, X, FileText, FileSpreadsheet, ChevronDown } from 'lucide-react';
+import { Loader2, Download, Plane, Edit2, Trash2, X, FileText, FileSpreadsheet, ChevronDown } from 'lucide-react';
 import { parseISO, differenceInDays, format } from 'date-fns';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
