@@ -1,0 +1,14 @@
+# Ignore Supabase directory (Edge Functions, Migrations, etc)
+# These are deployed separately via Supabase CLI
+supabase/
+
+# Ignore local dev files
+.env.local
+secrets.txt
+test.js
+test-out.json
+funcLogs.txt
+
+# Ignore logs
+*.log
+logs/

@@ -1,295 +1,262 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Work+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg: #10131b;
+  --bg2: #181b23;
+  --bg3: #1d2027;
+  --bg4: #272a32;
+  --amber: #f0a050;
+  --amber2: #ffc188;
+  --cyan: #74d1ff;
+  --green: #5ad88a;
+  --red: #ffb4ab;
+  --text: #e0e2ed;
+  --muted: #a08d7e;
+  --muted2: #534438;
+  --border: rgba(255, 255, 255, 0.07);
+  --border2: rgba(255, 255, 255, 0.12);
+}
+
+/* ── BASE ───────────────────────────────────────────── */
+
 @layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body {
-    background-color: #0a0e1a;
-    color: #e2e8f0;
-    font-family: 'Outfit', sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'Work Sans', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
   }
 
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
   ::selection {
-    background-color: rgba(6, 182, 212, 0.3);
-    color: white;
+    background-color: var(--amber);
+    color: var(--bg);
   }
 }
 
+/* ── COMPONENTS ─────────────────────────────────────── */
+
 @layer components {
-  /* Aurora background blobs */
-  .aurora-bg {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 0;
-    pointer-events: none;
-    overflow: hidden;
+
+  /* Layout Shell */
+  .layout-shell {
+    @apply min-h-screen flex flex-col md:flex-row;
   }
-  .aurora-bg::before,
-  .aurora-bg::after {
+
+  /* Sidebar — Heritage Aviator */
+  .sidebar-fixed {
+    width: 220px;
+    @apply h-screen sticky top-0 flex flex-col z-50;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+  }
+
+  /* Tab Bar — Frosted Terminal */
+  .tab-bar {
+    @apply sticky top-0 z-40 px-6 py-2 flex items-center gap-6;
+    background: rgba(24, 27, 35, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    will-change: transform;
+  }
+
+  /* ── Boarding Pass Module ── */
+  .boarding-pass {
+    @apply relative overflow-hidden;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    will-change: transform;
+  }
+
+  .boarding-pass:hover {
+    border-color: rgba(240, 160, 80, 0.2);
+    box-shadow: 0 0 12px rgba(240, 160, 80, 0.08);
+  }
+
+  /* Perforation Line — Boarding Stub Tear */
+  .perforation {
+    @apply relative my-4 mx-[-1px];
+    border-top: 1px dashed var(--muted2);
+    opacity: 0.4;
+  }
+
+  .perforation::before,
+  .perforation::after {
     content: '';
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(100px);
-  }
-  .aurora-bg::before {
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, transparent 70%);
-    top: -10%;
-    left: -5%;
-    animation: aurora-1 15s ease-in-out infinite;
-  }
-  .aurora-bg::after {
-    width: 500px;
-    height: 500px;
-    background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
-    bottom: -10%;
-    right: -5%;
-    animation: aurora-2 20s ease-in-out infinite;
+    @apply absolute top-[-6px] w-[12px] h-[12px] rounded-full;
+    background: var(--bg);
+    border: 1px solid var(--border);
   }
 
-  .aurora-blob-3 {
-    position: fixed;
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(circle, rgba(20, 184, 166, 0.1) 0%, transparent 70%);
-    border-radius: 50%;
-    filter: blur(80px);
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    animation: aurora-3 12s ease-in-out infinite;
-    pointer-events: none;
-    z-index: 0;
+  .perforation::before { left: -7px; }
+  .perforation::after { right: -7px; }
+
+  /* ── Dot Matrix Label ── */
+  .dot-matrix {
+    font-family: 'DM Mono', monospace;
+    @apply uppercase text-[10px] font-medium;
+    color: var(--muted);
+    letter-spacing: 0.15em;
   }
 
-  /* Glassmorphism card */
-  .glass-card {
-    background: rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 1.25rem;
-    transition: all 0.3s ease;
-  }
-  .glass-card:hover {
-    border-color: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 8px 32px rgba(6, 182, 212, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  /* Glass Overlay — Frosted Terminal */
+  .glass-overlay {
+    @apply overflow-hidden;
+    background: rgba(24, 27, 35, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border2);
+    border-radius: 14px;
+    will-change: transform, opacity;
   }
 
-  /* Glass input */
-  .glass-input {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 0.75rem;
-    color: white;
-    padding: 0.75rem 1rem;
-    outline: none;
-    transition: all 0.2s ease;
-    width: 100%;
-  }
-  .glass-input::placeholder {
-    color: rgba(148, 163, 184, 0.6);
-  }
-  .glass-input:focus {
-    border-color: rgba(6, 182, 212, 0.5);
-    box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+  /* ── Button: Primary Amber ── */
+  .btn-amber {
+    @apply px-5 py-2.5 font-bold text-xs uppercase;
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--amber);
+    color: var(--bg);
+    border-radius: 8px;
+    letter-spacing: 0.15em;
+    box-shadow: 0 0 12px rgba(240, 160, 80, 0.25);
+    transition: transform 0.15s ease, background-color 0.15s ease;
+    will-change: transform;
   }
 
-  /* Fix for dropdown options white-on-white and custom arrow */
-  select.glass-input {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='rgba(148, 163, 184, 0.8)' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 1rem center;
-    background-size: 1rem;
-    padding-right: 2.5rem;
+  .btn-amber:hover {
+    background: var(--amber2);
   }
 
-  select option {
-    background-color: #0f172a;
-    color: white;
-    padding: 10px;
-  }
-
-  /* Gradient text */
-  .gradient-text {
-    background: linear-gradient(135deg, #06b6d4, #8b5cf6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  /* Gradient button */
-  .btn-gradient {
-    background: linear-gradient(135deg, #06b6d4, #8b5cf6);
-    color: white;
-    font-weight: 600;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.75rem;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-  }
-  .btn-gradient:hover {
-    background: linear-gradient(135deg, #0891b2, #7c3aed);
-    box-shadow: 0 0 30px rgba(6, 182, 212, 0.3), 0 0 60px rgba(139, 92, 246, 0.15);
-    transform: translateY(-1px);
-  }
-  .btn-gradient:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
-
-  /* 3D Globe */
-  .globe-container {
-    perspective: 1000px;
-    width: 280px;
-    height: 280px;
-    margin: 0 auto;
-  }
-  .globe {
-    width: 280px;
-    height: 280px;
-    border-radius: 50%;
-    position: relative;
-    animation: globe-rotate 30s linear infinite;
-    transform-style: preserve-3d;
-  }
-  .globe::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: 
-      radial-gradient(circle at 30% 30%, rgba(6, 182, 212, 0.3) 0%, transparent 50%),
-      radial-gradient(circle at 70% 60%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
-    border: 2px solid rgba(6, 182, 212, 0.2);
-    box-shadow: 
-      inset 0 0 60px rgba(6, 182, 212, 0.1),
-      0 0 40px rgba(6, 182, 212, 0.1),
-      0 0 80px rgba(139, 92, 246, 0.05);
-  }
-  .globe::after {
-    content: '';
-    position: absolute;
-    inset: 4px;
-    border-radius: 50%;
-    border: 1px dashed rgba(6, 182, 212, 0.15);
-  }
-
-  .globe-ring {
-    position: absolute;
-    inset: -8px;
-    border-radius: 50%;
-    border: 1px solid rgba(6, 182, 212, 0.1);
-    transform: rotateX(60deg);
-  }
-  .globe-ring-2 {
-    position: absolute;
-    inset: -16px;
-    border-radius: 50%;
-    border: 1px solid rgba(139, 92, 246, 0.08);
-    transform: rotateX(60deg) rotateZ(30deg);
-  }
-
-  /* Glow border on hover */
-  .glow-border {
-    transition: all 0.3s ease;
-  }
-  .glow-border:hover {
-    box-shadow: 0 0 20px rgba(6, 182, 212, 0.15), 0 0 40px rgba(139, 92, 246, 0.08);
-  }
-
-  /* Glass sidebar */
-  .glass-sidebar {
-    background: rgba(10, 14, 26, 0.85);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
-    border-right: 1px solid rgba(255, 255, 255, 0.06);
-  }
-
-  /* Mobile Header */
-  .mobile-header {
-    background: rgba(10, 14, 26, 0.7);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    z-index: 40;
-  }
-
-  /* Floating Scout Button */
-  .scout-fab {
-    z-index: 50;
-    box-shadow: 0 8px 32px rgba(6, 182, 212, 0.25);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-
-  .scout-fab:hover {
-    transform: scale(1.1) translateY(-4px);
-    box-shadow: 0 12px 40px rgba(6, 182, 212, 0.35);
-  }
-
-  .scout-fab:active {
+  .btn-amber:active {
     transform: scale(0.95);
   }
 
-  /* Chat Overlay */
-  .chat-overlay {
-    z-index: 45;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
-    transform-origin: bottom right;
+  /* ── Button: Secondary Cyan (Dashed) ── */
+  .btn-cyan {
+    @apply px-4 py-2 text-[9px] font-bold uppercase;
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--cyan);
+    border: 1px dashed var(--cyan);
+    border-radius: 6px;
+    letter-spacing: 0.15em;
+    background: transparent;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
   }
 
-  @media (max-width: 640px) {
-    .chat-overlay {
-      bottom: 0 !important;
-      right: 0 !important;
-      width: 100vw !important;
-      max-width: 100vw !important;
-      height: 100vh !important;
-      max-height: 100vh !important;
-      border-radius: 0 !important;
-    }
+  .btn-cyan:hover {
+    background: rgba(116, 209, 255, 0.08);
+    box-shadow: 0 0 12px rgba(116, 209, 255, 0.15);
   }
 
-  /* Active nav item */
-  .nav-active {
-    background: rgba(6, 182, 212, 0.1);
-    color: #06b6d4;
-    border-left: 3px solid #06b6d4;
+  /* ── Input: Console Command ── */
+  .input-retro {
+    @apply px-3 py-2.5 text-sm outline-none;
+    font-family: 'DM Mono', monospace;
+    background: #0b0e15;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    transition: border-color 0.2s ease;
+  }
+
+  .input-retro:focus {
+    border-color: var(--amber);
+  }
+
+  .input-retro::placeholder {
+    color: var(--muted);
+    opacity: 0.4;
+    text-transform: uppercase;
+  }
+
+  /* ── Sidebar Bloom (Static Gradient) ── */
+  .sidebar-bloom {
+    @apply absolute top-0 left-0 w-32 h-32 pointer-events-none;
+    background: radial-gradient(circle, rgba(240,160,80,0.15) 0%, transparent 70%);
+    opacity: 0.2;
+  }
+
+  /* ── Scout UI ── */
+  .scout-fab-premium {
+    @apply fixed bottom-6 right-6 w-14 h-14 flex items-center justify-center z-[100];
+    background: var(--bg3);
+    border: 2px solid var(--amber);
+    border-radius: 14px;
+    box-shadow: 0 0 20px rgba(240, 160, 80, 0.3);
+    transition: transform 0.15s ease;
+    will-change: transform;
+  }
+
+  .scout-fab-premium:hover {
+    transform: scale(1.05);
+  }
+
+  .scout-fab-premium:active {
+    transform: scale(0.95);
+  }
+
+  .scout-overlay-premium {
+    @apply fixed bottom-24 right-6 w-[400px] h-[600px] glass-overlay z-[90] flex flex-col shadow-2xl;
+  }
+
+  /* ── Data Chip ── */
+  .data-chip {
+    @apply inline-flex items-center px-2.5 py-1 text-[9px] font-medium uppercase;
+    font-family: 'DM Mono', monospace;
+    background: var(--bg4);
+    border-radius: 4px;
+    color: var(--text);
+    letter-spacing: 0.1em;
   }
 }
 
-/* Custom Scrollbar */
+/* ── SCROLLBAR ──────────────────────────────────────── */
+
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--bg);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 999px;
+  background: var(--border2);
+  border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--amber);
 }
 
-/* Print styles keep light */
-@media print {
-  body {
-    background: white !important;
-    color: black !important;
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── KEYFRAMES ──────────────────────────────────────── */
+
+@keyframes boardFlip {
+  0%   { transform: rotateX(0deg); }
+  50%  { transform: rotateX(-90deg); opacity: 0.3; }
+  100% { transform: rotateX(0deg); }
+}
+
+/* ── PERFORMANCE: Reduced Motion ────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
