@@ -44,9 +44,7 @@ export function TripMembersProvider({ tripId, children }: { tripId: string; chil
       // Fetch both real members and guests in parallel
       const [membersRes, guestsRes] = await Promise.all([
         supabase
-          .from('trip_members')
-          .select('user_id, role, nickname')
-          .eq('trip_id', tripId),
+          .rpc('get_trip_members_with_email', { target_trip_id: tripId }),
         supabase
           .from('trip_guests')
           .select('id, nickname, created_at')
@@ -86,12 +84,14 @@ export function TripMembersProvider({ tripId, children }: { tripId: string; chil
       const member = members.find(m => m.user_id === userId);
       return member?.nickname || 'Guest';
     }
-    if (userId === user?.id) {
-      const me = members.find(m => m.user_id === userId);
-      return me?.nickname || 'You';
-    }
+    
     const member = members.find(m => m.user_id === userId);
-    return member?.nickname || `User ${userId.substring(0, 4)}`;
+    const emailPrefix = member?.email?.split('@')[0];
+    
+    if (userId === user?.id) {
+      return member?.nickname || emailPrefix || 'You';
+    }
+    return member?.nickname || emailPrefix || `User ${userId.substring(0, 4)}`;
   };
 
   const updateNickname = async (userId: string, nickname: string) => {

@@ -138,6 +138,25 @@ RETURNS BOOLEAN AS $$
   );
 $$ LANGUAGE sql SECURITY DEFINER;
 
+-- Helper function to securely fetch trip details from an invite code
+CREATE OR REPLACE FUNCTION public.get_trip_by_invite(invite_text TEXT)
+RETURNS TABLE (id UUID, name TEXT, destination TEXT, start_date DATE, end_date DATE)
+LANGUAGE sql SECURITY DEFINER AS $$
+  SELECT id, name, destination, start_date, end_date
+  FROM trips
+  WHERE invite_code = invite_text;
+$$;
+
+-- Helper function to fetch trip members securely along with their emails from auth.users
+CREATE OR REPLACE FUNCTION get_trip_members_with_email(target_trip_id UUID)
+RETURNS TABLE (user_id UUID, role TEXT, nickname TEXT, email TEXT)
+LANGUAGE sql SECURITY DEFINER AS $$
+  SELECT tm.user_id, tm.role, tm.nickname, au.email
+  FROM trip_members tm
+  JOIN auth.users au ON tm.user_id = au.id
+  WHERE tm.trip_id = target_trip_id;
+$$;
+
 -- TRIPS policies
 CREATE POLICY "Users can create trips" ON trips FOR INSERT WITH CHECK (auth.uid() = created_by);
 CREATE POLICY "Users can view trips they are members of" ON trips FOR SELECT USING (public.is_trip_member(id) OR created_by = auth.uid());

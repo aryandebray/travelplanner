@@ -7,7 +7,7 @@ import { MapPin, Loader2, Globe, Calendar, Users } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 
 export default function JoinTripPage() {
-  const { inviteCode } = useParams();
+  const { code: inviteCode } = useParams();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   
@@ -19,18 +19,25 @@ export default function JoinTripPage() {
 
   useEffect(() => {
     if (authLoading) return;
+    
+    if (!user) {
+      // User is not logged in, force them to login first
+      localStorage.setItem('atlas_redirect', `/join/${inviteCode}`);
+      navigate('/auth');
+      return;
+    }
+
     fetchTripDetails();
-  }, [inviteCode, authLoading]);
+  }, [inviteCode, user, authLoading, navigate]);
 
   const fetchTripDetails = async () => {
     try {
       const { data, error } = await supabase
-        .from('trips')
-        .select('id, name, destination, start_date, end_date')
-        .eq('invite_code', inviteCode)
+        .rpc('get_trip_by_invite', { invite_text: inviteCode })
         .single();
         
-      if (error || !data) throw new Error('Invalid or expired invite link.');
+      if (error) throw new Error(`Database Error: ${error.message}`);
+      if (!data) throw new Error('Invalid or expired invite link.');
       setTrip(data);
       
       if (user) {

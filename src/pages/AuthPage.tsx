@@ -18,7 +18,13 @@ export default function AuthPage() {
 
   useEffect(() => {
     if (user) {
-      navigate('/');
+      const redirect = localStorage.getItem('atlas_redirect');
+      if (redirect) {
+        localStorage.removeItem('atlas_redirect');
+        navigate(redirect);
+      } else {
+        navigate('/');
+      }
     }
   }, [user, navigate]);
 
