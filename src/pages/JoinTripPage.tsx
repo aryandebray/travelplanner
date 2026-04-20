@@ -38,18 +38,20 @@ export default function JoinTripPage() {
         
       if (error) throw new Error(`Database Error: ${error.message}`);
       if (!data) throw new Error('Invalid or expired invite link.');
-      setTrip(data);
+      
+      const tripData = data as any;
+      setTrip(tripData);
       
       if (user) {
         const { data: memberData } = await supabase
           .from('trip_members')
           .select('*')
-          .eq('trip_id', data.id)
+          .eq('trip_id', tripData.id)
           .eq('user_id', user.id)
           .single();
           
         if (memberData) {
-          navigate(`/trip/${data.id}/itinerary`);
+          navigate(`/trip/${tripData.id}/itinerary`);
         }
       }
     } catch (err: any) {

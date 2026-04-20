@@ -53,7 +53,7 @@ export function TripMembersProvider({ tripId, children }: { tripId: string; chil
 
       if (membersRes.error) throw membersRes.error;
 
-      const realMembers: TripMember[] = (membersRes.data || []).map(m => ({
+      const realMembers: TripMember[] = (membersRes.data || []).map((m: any) => ({
         ...m,
         is_guest: false,
       }));
